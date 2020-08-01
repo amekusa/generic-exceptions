@@ -5,22 +5,29 @@
   "main": "bundle.js",
   "files": [
     "src",
-    "bundle.js"
+    "bundle.js",
+    "bundle.js.map"
   ],
   "exports": {
     "import": "./src/main.js",
     "require": "./bundle.js"
   },
   "scripts": {
-    "devtools": "npm i --no-save rollup mocha npm-watch",
+    "devtools": "npm i --no-save rollup mocha nyc npm-watch",
     "watch": "npm-watch",
-    "test": "mocha",
-    "build": "rollup src/main.js --file bundle.js --format umd --name generic-exceptions",
+    "test": "nyc mocha",
+    "build": "rollup src/main.js --file bundle.js --sourcemap --format umd --name generic-exceptions",
     "prepublish": "npm run test && npm run build"
   },
   "watch": {
-    "test": ["test.js", "bundle.js"],
-    "build": "src/*.js"
+    "test": {
+      "patterns": ["test.js", "bundle.js"],
+      "inherit": true
+    },
+    "build": {
+      "patterns": "src/*.js",
+      "inherit": true
+    }
   },
   "repository": {
     "type": "git",

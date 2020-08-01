@@ -1,2 +1,4 @@
+*.map
+
 /package-lock.json
 /bundle.js
