@@ -35,7 +35,7 @@ const {
 	Exception
 } = require('./bundle');
 
-describe(`Exception:`, () => {
+describe(`Exception`, () => {
 	it(`.info()`, () => {
 		let info = { X: 1, Y: 2 };
 		let ex = new Exception(`MSG`, info);
@@ -44,7 +44,23 @@ describe(`Exception:`, () => {
 });
 
 describe(`InvalidType`, () => {
-	it(`.check() primitives`, () => {
+	it(`.failed()`, () => {
+		let ex = InvalidType.failed('A', 'boolean', 'OK');
+		assert.deepEqual(ex.info, {
+			checkedValue: 'A',
+			expectedType: 'boolean',
+			actualType: 'OK'
+		});
+	});
+	it(`.failed() :: auto type`, () => {
+		let ex = InvalidType.failed('A', 'boolean');
+		assert.deepEqual(ex.info, {
+			checkedValue: 'A',
+			expectedType: 'boolean',
+			actualType: 'string'
+		});
+	});
+	it(`.check() :: primitives`, () => {
 		assert.doesNotThrow(() => {
 			InvalidType.check(true, 'boolean');
 			InvalidType.check(1, 'number');
@@ -60,7 +76,7 @@ describe(`InvalidType`, () => {
 			InvalidType.check(() => {}, 'object');
 		});
 	});
-	it(`.check() classes`, () => {
+	it(`.check() :: classes`, () => {
 		assert.doesNotThrow(() => {
 			InvalidType.check([], Array);
 			let ex = new InvalidType();
