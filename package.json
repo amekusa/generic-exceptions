@@ -13,12 +13,12 @@
     "require": "./bundle.js"
   },
   "scripts": {
-    "devtools": "npm i --no-save rollup mocha nyc npm-watch",
+    "install": "npm i --no-save rollup mocha nyc codecov npm-watch",
+    "prepublishOnly": "npm run test && npm run build",
     "watch": "npm-watch",
     "build": "rollup src/main.js --file bundle.js --sourcemap --format umd --name generic-exceptions",
     "test": "nyc mocha",
-    "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
-    "prepublish": "npm run test && npm run build"
+    "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
   },
   "watch": {
     "build": {
