@@ -15,17 +15,21 @@
   "scripts": {
     "devtools": "npm i --no-save rollup mocha nyc npm-watch",
     "watch": "npm-watch",
-    "test": "nyc mocha",
     "build": "rollup src/main.js --file bundle.js --sourcemap --format umd --name generic-exceptions",
+    "test": "nyc mocha",
+    "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "prepublish": "npm run test && npm run build"
   },
   "watch": {
-    "test": {
-      "patterns": ["test.js", "bundle.js"],
-      "inherit": true
-    },
     "build": {
       "patterns": "src/*.js",
+      "inherit": true
+    },
+    "test": {
+      "patterns": [
+        "test.js",
+        "bundle.js"
+      ],
       "inherit": true
     }
   },
