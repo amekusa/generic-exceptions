@@ -35,59 +35,151 @@ const {
 	Exception
 } = require('./bundle');
 
+beforeEach(() => {
+	Exception.reset();
+});
+
 describe(`Exception`, () => {
+	it(`.message`, () => {
+		let ex = new Exception(`MSG`);
+		assert.equal(ex.message, `MSG`);
+	});
 	it(`.info()`, () => {
 		let info = { X: 1, Y: 2 };
-		let ex = new Exception(`MSG`, info);
+		let ex = new Exception(`A`, info);
 		assert.deepEqual(ex.info, info);
+	});
+	it('.trigger()', () => {
+		let ex = new Exception(`A`);
+		assert.throws(() => {
+			ex.trigger();
+		});
+	});
+
+	describe(`static`, () => {
+		it(`.option(name)`, () => {
+			let r = Exception.option('handler');
+			assert.strictEqual(r, null);
+		});
+		it(`.option(name, value)`, () => {
+			let r = Exception.option('handler', 'A');
+			assert.equal(Exception.option('handler'), 'A');
+			assert.strictEqual(r, Exception);
+		});
+		it(`.options()`, () => {
+			let r = Exception.options();
+			assert.deepEqual(r, {
+				handler: Exception.option('handler')
+			});
+		});
+		it(`.options(set)`, () => {
+			let r = Exception.options({ handler: 'A' });
+			assert.equal(Exception.option('handler'), 'A');
+			assert.strictEqual(r, Exception);
+		});
+		it(`.check(value)`, () => {
+			assert.throws(() => {
+				Exception.check(false);
+				Exception.check(0);
+				Exception.check('');
+				Exception.check(null);
+			});
+			assert.doesNotThrow(() => {
+				Exception.check(true);
+				Exception.check(1);
+				Exception.check('A');
+				Exception.check({});
+			});
+		});
+		it('.check(value, expected)', () => {
+			assert.throws(() => {
+				Exception.check(1, true);
+				Exception.check(1, '1');
+			});
+			assert.doesNotThrow(() => {
+				Exception.check(1, 1);
+			})
+		});
+	});
+
+	describe('options', () => {
+		it('handler: function', () => {
+			let ex = new Exception('A');
+			assert.throws(() => {
+				ex.trigger();
+			});
+			Exception.option('handler', e => {
+				assert.strictEqual(e, ex);
+			});
+			assert.doesNotThrow(() => {
+				ex.trigger();
+			});
+		});
 	});
 });
 
 describe(`InvalidType`, () => {
-	it(`.failed()`, () => {
-		let ex = InvalidType.failed('A', 'boolean', 'OK');
-		assert.deepEqual(ex.info, {
-			checkedValue: 'A',
-			expectedType: 'boolean',
-			actualType: 'OK'
+
+	describe('static', () => {
+		it(`.failed()`, () => {
+			let ex = InvalidType.failed('A', 'boolean', 'OK');
+			assert.deepEqual(ex.info, {
+				checkedValue: 'A',
+				expectedType: 'boolean',
+				actualType: 'OK'
+			});
+		});
+		it(`.failed() :: auto type`, () => {
+			let ex = InvalidType.failed('A', 'boolean');
+			assert.deepEqual(ex.info, {
+				checkedValue: 'A',
+				expectedType: 'boolean',
+				actualType: 'string'
+			});
+		});
+		it(`.check() :: primitives`, () => {
+			assert.doesNotThrow(() => {
+				InvalidType.check(true, 'boolean');
+				InvalidType.check(1, 'number');
+				InvalidType.check('A', 'string');
+				InvalidType.check({}, 'object');
+				InvalidType.check(() => {}, 'function');
+			});
+			assert.throws(() => {
+				InvalidType.check(true, 'function');
+				InvalidType.check(1, 'boolean');
+				InvalidType.check('A', 'number');
+				InvalidType.check({}, 'string');
+				InvalidType.check(() => {}, 'object');
+			});
+		});
+		it(`.check() :: classes`, () => {
+			assert.doesNotThrow(() => {
+				InvalidType.check([], Array);
+				let ex = new InvalidType();
+				InvalidType.check(ex, InvalidType);
+				InvalidType.check(ex, Exception);
+				InvalidType.check(ex, Error);
+			});
+			assert.throws(() => {
+				InvalidType.check([], Error);
+				let ex = new InvalidType();
+				InvalidType.check(ex, Array);
+			});
 		});
 	});
-	it(`.failed() :: auto type`, () => {
-		let ex = InvalidType.failed('A', 'boolean');
-		assert.deepEqual(ex.info, {
-			checkedValue: 'A',
-			expectedType: 'boolean',
-			actualType: 'string'
-		});
-	});
-	it(`.check() :: primitives`, () => {
-		assert.doesNotThrow(() => {
-			InvalidType.check(true, 'boolean');
-			InvalidType.check(1, 'number');
-			InvalidType.check('A', 'string');
-			InvalidType.check({}, 'object');
-			InvalidType.check(() => {}, 'function');
-		});
-		assert.throws(() => {
-			InvalidType.check(true, 'function');
-			InvalidType.check(1, 'boolean');
-			InvalidType.check('A', 'number');
-			InvalidType.check({}, 'string');
-			InvalidType.check(() => {}, 'object');
-		});
-	});
-	it(`.check() :: classes`, () => {
-		assert.doesNotThrow(() => {
-			InvalidType.check([], Array);
-			let ex = new InvalidType();
-			InvalidType.check(ex, InvalidType);
-			InvalidType.check(ex, Exception);
-			InvalidType.check(ex, Error);
-		});
-		assert.throws(() => {
-			InvalidType.check([], Error);
-			let ex = new InvalidType();
-			InvalidType.check(ex, Array);
+
+	describe('options', () => {
+		it('handler :: inheritance', () => {
+			assert.throws(() => {
+				InvalidType.check('XXX', 'boolean');
+			});
+			Exception.option('handler', e => {
+				assert.ok(e instanceof InvalidType);
+			});
+			assert.doesNotThrow(() => {
+				InvalidType.check('XXX', 'boolean');
+			});
 		});
 	});
 });
