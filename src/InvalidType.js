@@ -12,12 +12,31 @@ class InvalidType extends Exception {
 		});
 	}
 	static check(value, expectedType) {
-		let actualType = typeof value;
-		if (typeof expectedType == 'function' && actualType == 'object') {
-			if (value instanceof expectedType) return true;
-		} else if (actualType == expectedType) return true;
-		return InvalidType.failed(value, expectedType, actualType).trigger();
+		return isTypeOf(value, expectedType) ? value :
+			InvalidType.failed(value, expectedType).trigger();
 	}
+}
+
+function isTypeOf(value, expectedType) {
+	let actualType = typeof value;
+	if (actualType === expectedType) return true;
+
+	switch (actualType) {
+	case 'object':
+		if (typeof expectedType == 'function') return value instanceof expectedType;
+		if (expectedType == 'iterable') return typeof value[Symbol.iterator] == 'function';
+		break;
+	case 'boolean':
+		return expectedType == 'bool';
+	case 'number':
+		switch (expectedType) {
+		case 'int':
+		case 'integer':
+			return isFinite(value) && Math.floor(value) === value;
+		}
+		break;
+	}
+	return false;
 }
 
 export default InvalidType;
