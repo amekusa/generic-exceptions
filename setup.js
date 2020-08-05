@@ -61,7 +61,7 @@ function resolveDeps(deps) {
 			return run(`npm i --no-save ${installs.join(' ')}`).then(() => {
 				console.log(`Installation complete.`);
 				console.log(`All the dependencies have been resolved.`);
-			});;
+			});
 
 		}).catch(e => {
 			console.error(e)
