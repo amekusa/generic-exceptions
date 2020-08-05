@@ -1,14 +1,14 @@
 import Exception from './Exception.js';
 
 class InvalidType extends Exception {
-	constructor(info = null) {
-		super('unexpected type of value detected', info);
+	constructor(msg = null, info = null) {
+		super(typeof msg == 'string' ? msg : 'unexpected type of value detected', info);
 	}
-	static failed(checkedValue, expectedType, actualType = null) {
-		return new InvalidType({
-			checkedValue,
+	static failed(checked, expectedType, actualType = null) {
+		return new InvalidType(null, {
+			checked,
 			expectedType,
-			actualType: actualType || typeof checkedValue
+			actualType: actualType || typeof checked
 		});
 	}
 	static check(value, expectedType) {

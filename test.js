@@ -120,7 +120,7 @@ describe(`InvalidType`, () => {
 		it(`.failed()`, () => {
 			let ex = InvalidType.failed('A', 'boolean', 'OK');
 			assert.deepEqual(ex.info, {
-				checkedValue: 'A',
+				checked: 'A',
 				expectedType: 'boolean',
 				actualType: 'OK'
 			});
@@ -128,7 +128,7 @@ describe(`InvalidType`, () => {
 		it(`.failed() :: auto type`, () => {
 			let ex = InvalidType.failed('A', 'boolean');
 			assert.deepEqual(ex.info, {
-				checkedValue: 'A',
+				checked: 'A',
 				expectedType: 'boolean',
 				actualType: 'string'
 			});
@@ -149,6 +149,7 @@ describe(`InvalidType`, () => {
 		});
 		it(`.check() :: classes`, () => {
 			assert.doesNotThrow(() => {
+				InvalidType.check(new String(), String);
 				InvalidType.check([], Array);
 				let ex = new InvalidType();
 				InvalidType.check(ex, InvalidType);
