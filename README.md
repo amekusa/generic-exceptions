@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/amekusa/generic-exceptions.svg?branch=master)](https://travis-ci.org/amekusa/generic-exceptions)[![codecov](https://codecov.io/gh/amekusa/generic-exceptions/branch/master/graph/badge.svg)](https://codecov.io/gh/amekusa/generic-exceptions)
+[![Build Status](https://travis-ci.org/amekusa/generic-exceptions.svg?branch=master)](https://travis-ci.org/amekusa/generic-exceptions) [![codecov](https://codecov.io/gh/amekusa/generic-exceptions/branch/master/graph/badge.svg)](https://codecov.io/gh/amekusa/generic-exceptions)
 
 **generic-exceptions** provides some generic exception classes and useful methods to check and handle some typical programming errors.
 
@@ -22,3 +22,4 @@ const { <ExceptionClass>, ... } = require('generic-exceptions');
 ---
 
 &copy; 2020 [Satoshi Soma](https://amekusa.com)
+

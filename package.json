@@ -13,12 +13,31 @@
     "require": "./bundle.js"
   },
   "scripts": {
-    "prepare": "node global-deps.js",
     "prepublishOnly": "npm run test && npm run build",
+    "setup": "node setup.js",
     "watch": "npm-watch",
     "build": "rollup src/main.js --file bundle.js --sourcemap --format umd --name generic-exceptions",
     "test": "nyc mocha",
     "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
+  },
+  "_setup": {
+    "deps": {
+      "rollup": {
+        "version": "2.22.1"
+      },
+      "nyc": {
+        "version": "15.1.0"
+      },
+      "mocha": {
+        "version": "8.0.1"
+      },
+      "codecov": {
+        "version": "3.7.2"
+      },
+      "npm-watch": {
+        "version": "0.6.0"
+      }
+    }
   },
   "watch": {
     "build": {
