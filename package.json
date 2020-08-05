@@ -13,7 +13,7 @@
     "require": "./bundle.js"
   },
   "scripts": {
-    "install": "npm i --no-save rollup mocha nyc codecov npm-watch",
+    "prepare": "node global-deps.js",
     "prepublishOnly": "npm run test && npm run build",
     "watch": "npm-watch",
     "build": "rollup src/main.js --file bundle.js --sourcemap --format umd --name generic-exceptions",
