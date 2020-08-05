@@ -78,12 +78,10 @@ describe(`Exception`, () => {
 			assert.strictEqual(r, Exception);
 		});
 		it(`.check(value)`, () => {
-			assert.throws(() => {
-				Exception.check(false);
-				Exception.check(0);
-				Exception.check('');
-				Exception.check(null);
-			});
+			assert.throws(() => { Exception.check(false) });
+			assert.throws(() => { Exception.check(0) });
+			assert.throws(() => { Exception.check('') });
+			assert.throws(() => { Exception.check(null) });
 			assert.doesNotThrow(() => {
 				Exception.check(true);
 				Exception.check(1);
@@ -92,10 +90,8 @@ describe(`Exception`, () => {
 			});
 		});
 		it('.check(value, expected)', () => {
-			assert.throws(() => {
-				Exception.check(1, true);
-				Exception.check(1, '1');
-			});
+			assert.throws(() => { Exception.check(1, true) });
+			assert.throws(() => { Exception.check(1, '1') });
 			assert.doesNotThrow(() => {
 				Exception.check(1, 1);
 			})
@@ -145,13 +141,11 @@ describe(`InvalidType`, () => {
 				InvalidType.check({}, 'object');
 				InvalidType.check(() => {}, 'function');
 			});
-			assert.throws(() => {
-				InvalidType.check(true, 'function');
-				InvalidType.check(1, 'boolean');
-				InvalidType.check('A', 'number');
-				InvalidType.check({}, 'string');
-				InvalidType.check(() => {}, 'object');
-			});
+			assert.throws(() => { InvalidType.check(true, 'function') });
+			assert.throws(() => { InvalidType.check(1, 'boolean') });
+			assert.throws(() => { InvalidType.check('A', 'number') });
+			assert.throws(() => { InvalidType.check({}, 'string') });
+			assert.throws(() => { InvalidType.check(() => {}, 'object') });
 		});
 		it(`.check() :: classes`, () => {
 			assert.doesNotThrow(() => {
@@ -161,11 +155,33 @@ describe(`InvalidType`, () => {
 				InvalidType.check(ex, Exception);
 				InvalidType.check(ex, Error);
 			});
-			assert.throws(() => {
-				InvalidType.check([], Error);
-				let ex = new InvalidType();
-				InvalidType.check(ex, Array);
+			assert.throws(() => { InvalidType.check([], Error) });
+			assert.throws(() => { InvalidType.check(new InvalidType(), Array) });
+		});
+		it('.check() :: iterable', () => {
+			let iterable = {};
+			iterable[Symbol.iterator] = function* () {
+				yield 1;
+				yield 2;
+				yield 3;
+			};
+			assert.doesNotThrow(() => {
+				InvalidType.check(iterable, 'iterable');
+				InvalidType.check([], 'iterable');
 			});
+			assert.throws(() => {
+				InvalidType.check({}, 'iterable');
+			});
+		});
+		it('.check() :: special types', () => {
+			assert.doesNotThrow(() => {
+				InvalidType.check(true, 'bool');
+				InvalidType.check(1, 'int');
+				InvalidType.check(1, 'integer');
+			});
+			assert.throws(() => { InvalidType.check(1, 'bool') });
+			assert.throws(() => { InvalidType.check(1.2, 'int') });
+			assert.throws(() => { InvalidType.check(1.2, 'integer') });
 		});
 	});
 
