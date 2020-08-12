@@ -44,15 +44,45 @@ describe(`Exception`, () => {
 		let ex = new Exception(`MSG`);
 		assert.equal(ex.message, `MSG`);
 	});
-	it(`.info()`, () => {
+	it(`.info`, () => {
 		let info = { X: 1, Y: 2 };
 		let ex = new Exception(`A`, info);
 		assert.deepEqual(ex.info, info);
 	});
-	it('.trigger()', () => {
+	it(`.trigger()`, () => {
 		let ex = new Exception(`A`);
 		assert.throws(() => {
 			ex.trigger();
+		});
+	});
+	it(`.expects(value)`, () => {
+		assert.throws(() => {
+			try {
+				Exception.check('');
+			} catch (e) {
+				assert.ok(e.expects('TRUTHY'));
+				assert.ok(e.expects(1));
+				assert.ok(e.expects(true));
+				throw e;
+			}
+		})
+		assert.throws(() => {
+			try {
+				Exception.check(1, 2);
+			} catch (e) {
+				assert.ok(e.expects(2));
+				throw e;
+			}
+		});
+		assert.throws(() => {
+			try {
+				Exception.check(1, 2, 3);
+			} catch (e) {
+				assert.ok(e.expects(2));
+				assert.ok(e.expects(3));
+				assert.ok(!e.expects(1));
+				throw e;
+			}
 		});
 	});
 
@@ -96,6 +126,12 @@ describe(`Exception`, () => {
 				Exception.check(1, 1);
 			})
 		});
+		it('.check(value, expected, ...)', () => {
+			assert.throws(() => { Exception.check(1, true, '1') });
+			assert.doesNotThrow(() => {
+				Exception.check(1, true, '1', 1);
+			});
+		});
 	});
 
 	describe('options', () => {
@@ -115,17 +151,30 @@ describe(`Exception`, () => {
 });
 
 describe(`InvalidType`, () => {
+	it('.expects(type)', () => {
+		assert.throws(() => {
+			try {
+				InvalidType.check(true, 'string');
+			} catch (e) {
+				assert.ok(e.expects('string'));
+				assert.ok(!e.expects('int'));
+				throw e;
+			}
+		});
+		assert.throws(() => {
+			try {
+				InvalidType.check('A', 'int', 'boolean');
+			} catch (e) {
+				assert.ok(e.expects('int'));
+				assert.ok(e.expects('boolean'));
+				assert.ok(!e.expects('string'));
+				throw e;
+			}
+		});
+	});
 
 	describe('static', () => {
-		it(`.failed()`, () => {
-			let ex = InvalidType.failed('A', 'boolean', 'OK');
-			assert.deepEqual(ex.info, {
-				checked: 'A',
-				expectedType: 'boolean',
-				actualType: 'OK'
-			});
-		});
-		it(`.failed() :: auto type`, () => {
+		it(`.failed(value, type)`, () => {
 			let ex = InvalidType.failed('A', 'boolean');
 			assert.deepEqual(ex.info, {
 				checked: 'A',
@@ -133,7 +182,15 @@ describe(`InvalidType`, () => {
 				actualType: 'string'
 			});
 		});
-		it(`.check() :: primitives`, () => {
+		it(`.failed(value, type, ...)`, () => {
+			let ex = InvalidType.failed('A', 'int', 'boolean');
+			assert.deepEqual(ex.info, {
+				checked: 'A',
+				expectedType: ['int', 'boolean'],
+				actualType: 'string'
+			});
+		});
+		it(`.check(value, <primitive>)`, () => {
 			assert.doesNotThrow(() => {
 				InvalidType.check(true, 'boolean');
 				InvalidType.check(1, 'number');
@@ -147,7 +204,7 @@ describe(`InvalidType`, () => {
 			assert.throws(() => { InvalidType.check({}, 'string') });
 			assert.throws(() => { InvalidType.check(() => {}, 'object') });
 		});
-		it(`.check() :: classes`, () => {
+		it(`.check(value, <class>)`, () => {
 			assert.doesNotThrow(() => {
 				InvalidType.check(new String(), String);
 				InvalidType.check([], Array);
@@ -159,7 +216,7 @@ describe(`InvalidType`, () => {
 			assert.throws(() => { InvalidType.check([], Error) });
 			assert.throws(() => { InvalidType.check(new InvalidType(), Array) });
 		});
-		it('.check() :: iterable', () => {
+		it(`.check(value, 'iterable')`, () => {
 			let iterable = {};
 			iterable[Symbol.iterator] = function* () {
 				yield 1;
@@ -174,7 +231,7 @@ describe(`InvalidType`, () => {
 				InvalidType.check({}, 'iterable');
 			});
 		});
-		it('.check() :: special types', () => {
+		it(`.check(value, <special-type>)`, () => {
 			assert.doesNotThrow(() => {
 				InvalidType.check(true, 'bool');
 				InvalidType.check(1, 'int');
@@ -183,6 +240,23 @@ describe(`InvalidType`, () => {
 			assert.throws(() => { InvalidType.check(1, 'bool') });
 			assert.throws(() => { InvalidType.check(1.2, 'int') });
 			assert.throws(() => { InvalidType.check(1.2, 'integer') });
+		});
+		it(`.check(value, type, ...)`, () => {
+			assert.doesNotThrow(() => {
+				InvalidType.check(true, 'int', 'string', 'bool');
+			});
+			assert.throws(() => {
+				try {
+					InvalidType.check(true, 'int', 'string', 'object');
+				} catch (e) {
+					assert.deepEqual(e.info, {
+						checked: true,
+						expectedType: ['int', 'string', 'object'],
+						actualType: 'boolean'
+					});
+					throw e;
+				}
+			});
 		});
 	});
 
