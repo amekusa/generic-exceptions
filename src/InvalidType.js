@@ -4,16 +4,23 @@ class InvalidType extends Exception {
 	constructor(msg = null, info = null) {
 		super(typeof msg == 'string' ? msg : 'unexpected type of value detected', info);
 	}
-	static failed(checked, expectedType, actualType = null) {
+	expects(type) {
+		if (!('expectedType' in this.info)) return false;
+		return Array.isArray(this.info.expectedType) ?
+			this.info.expectedType.includes(type) : (type === this.info.expectedType);
+	}
+	static failed(checked, ...expectedType) {
 		return new InvalidType(null, {
 			checked,
-			expectedType,
-			actualType: actualType || typeof checked
+			expectedType: expectedType.length > 1 ? expectedType : expectedType[0],
+			actualType: typeof checked
 		});
 	}
-	static check(value, expectedType) {
-		return isTypeOf(value, expectedType) ? value :
-			InvalidType.failed(value, expectedType).trigger();
+	static check(value, ...expectedType) {
+		for (let type of expectedType) {
+			if (isTypeOf(value, type)) return value;
+		}
+		return InvalidType.failed(value, expectedType).trigger();
 	}
 }
 

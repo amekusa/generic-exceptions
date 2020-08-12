@@ -1,4 +1,4 @@
-const truthy = Symbol('<Truthy>');
+const truthy = Symbol('<truthy>');
 let options;
 
 class Exception extends Error {
@@ -13,6 +13,12 @@ class Exception extends Error {
 	trigger() {
 		if (typeof options.handler != 'function') throw this;
 		return options.handler(this);
+	}
+	expects(value) {
+		if (!('expected' in this.info)) return false;
+		if (this.info.expected == truthy) return !!value;
+		return Array.isArray(this.info.expected) ?
+			this.info.expected.includes(value) : (value === this.info.expected);
 	}
 	static reset() {
 		options = {
@@ -30,16 +36,20 @@ class Exception extends Error {
 		Object.assign(options, set);
 		return Exception;
 	}
-	static failed(checked, expected) {
+	static failed(checked, ...expected) {
 		return new Exception(`unexpected value`, {
 			checked,
-			expected
+			expected: expected.length < 1 ? truthy :
+				(expected.length > 1 ? expected : expected[0])
 		});
 	}
-	static check(value, expected = truthy) {
-		if (arguments.length < 2 && value) return value;
-		if (value === expected) return value;
-		return Exception.failed(value, truthy).trigger();
+	static check(value, ...expected) {
+		if (arguments.length > 1) {
+			for (let I of expected) {
+				if (value === I) return value;
+			}
+		} else if (value) return value;
+		return Exception.failed(value, ...expected).trigger();
 	}
 }
 
