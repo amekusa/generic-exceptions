@@ -1,0 +1,32 @@
+{
+  "plugins": [
+    "plugins/markdown"
+  ],
+  "sourceType": "module",
+  "source": {
+    "include": ["src", "package.json", "README.md"],
+    "includePattern": ".js$"
+  },
+  "tags": {
+    "allowUnknownTags": true,
+    "dictionaries": ["jsdoc", "closure"]
+  },
+  "templates": {
+    "cleverLinks": true,
+    "monospaceLinks": false,
+    "default": {
+      "outputSourceFiles": true
+    },
+    "docolatte": {
+      "branding": {
+        "title": "Generic Exceptions"
+      }
+    }
+  },
+  "opts": {
+    "destination": "./docs/",
+    "template": "node_modules/docolatte",
+    "encoding": "utf8",
+    "recurse": true
+  }
+}

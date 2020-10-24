@@ -18,7 +18,11 @@
     "watch": "npm-watch",
     "build": "rollup src/main.js --file bundle.js --sourcemap --format umd --name generic-exceptions",
     "test": "nyc mocha",
-    "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
+    "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
+    "docs": "npm run docs:clean && npm run docs:gen && npm run docs:publish",
+    "docs:gen": "jsdoc -c jsdoc.json",
+    "docs:clean": "rm -rf docs/generic-exceptions/$npm_package_version",
+    "docs:publish": "git subtree push --prefix docs/generic-exceptions origin gh-pages"
   },
   "_setup": {
     "deps": {
@@ -33,6 +37,12 @@
       },
       "codecov": {
         "version": "3.7.2"
+      },
+      "jsdoc": {
+        "version": "3.6.6"
+      },
+      "docolatte": {
+        "version": "1.0.0"
       },
       "npm-watch": {
         "version": "0.6.0"
@@ -49,6 +59,10 @@
         "test.js",
         "bundle.js"
       ],
+      "inherit": true
+    },
+    "docs": {
+      "patterns": "src/*.js",
       "inherit": true
     }
   },
