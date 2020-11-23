@@ -178,16 +178,16 @@ describe(`InvalidType`, () => {
 			let ex = InvalidType.failed('A', 'boolean');
 			assert.deepEqual(ex.info, {
 				checked: 'A',
-				expectedType: 'boolean',
-				actualType: 'string'
+				expected: 'boolean',
+				actual: 'string'
 			});
 		});
 		it(`.failed(value, type, ...)`, () => {
 			let ex = InvalidType.failed('A', 'int', 'boolean');
 			assert.deepEqual(ex.info, {
 				checked: 'A',
-				expectedType: ['int', 'boolean'],
-				actualType: 'string'
+				expected: ['int', 'boolean'],
+				actual: 'string'
 			});
 		});
 		it(`.check(value, <primitive>)`, () => {
@@ -251,8 +251,8 @@ describe(`InvalidType`, () => {
 				} catch (e) {
 					assert.deepEqual(e.info, {
 						checked: true,
-						expectedType: ['int', 'string', 'object'],
-						actualType: 'boolean'
+						expected: ['int', 'string', 'object'],
+						actual: 'boolean'
 					});
 					throw e;
 				}
