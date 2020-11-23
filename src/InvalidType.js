@@ -1,42 +1,97 @@
 import Exception from './Exception.js';
 
+/**
+ * Thrown to indicate that the type of a value isn't expected.
+ *
+ * @example <caption>Basic Usage</caption>
+ * function greet(name) {
+ *   var checked = InvalidType.check(name, 'string');
+ *   alert('Hello, ' + checked);
+ * }
+ * greet('John'); // "Hello, John"
+ * greet(1234);   // Throws: "unexpected type of value ..."
+ *
+ * @example <caption>Multiple Expectations</caption>
+ * var value = 'ABC';
+ * InvalidType.check(value, 'boolean', 'string', 'object'); // OK
+ *
+ * @example <caption>Class Checking</caption>
+ * class Beagle extends Dog {
+ *   ...
+ * }
+ * var oliver = new Beagle();
+ * InvalidType.check(oliver, Dog);      // OK
+ * InvalidType.check(oliver, Beagle);   // OK
+ * InvalidType.check(oliver, ShibaInu); // Throws
+ *
+ * @example <caption>Using .info for debug inside 'catch'</caption>
+ * value = 123;
+ * try {
+ *   InvalidType.check(value, 'string', 'object');
+ * } catch (e) {
+ *   console.debug( e.info.checked  ); // 123
+ *   console.debug( e.info.expected ); // ['string', 'object']
+ *   console.debug( e.info.actual   ); // 'number'
+ * }
+ *
+ * @extends Exception
+ * @hideconstructor
+ */
 class InvalidType extends Exception {
-	constructor(msg = null, info = null) {
-		super(typeof msg == 'string' ? msg : 'unexpected type of value detected', info);
-	}
+	/**
+	 * Returns if this exception expected `type`.
+	 * @param {string|class} type
+	 * @return {boolean}
+	 * @see InvalidType.check
+	 */
 	expects(type) {
-		if (!('expectedType' in this.info)) return false;
-		return Array.isArray(this.info.expectedType) ?
-			this.info.expectedType.includes(type) : (type === this.info.expectedType);
+		return super.expects(type);
 	}
-	static failed(checked, ...expectedType) {
-		return new InvalidType(null, {
+	static failed(checked, ...expected) {
+		return new this(`unexpected type of value`, {
 			checked,
-			expectedType: expectedType.length > 1 ? expectedType : expectedType[0],
-			actualType: typeof checked
+			expected: expected.length > 1 ? expected : expected[0],
+			actual: typeof checked
 		});
 	}
-	static check(value, ...expectedType) {
-		for (let type of expectedType) {
+	/**
+	 * Checks if the type of `value` matches with `expected`. If it does, just returns `value`.
+	 * Otherwise, [triggers]{@link InvalidType#trigger} an exception.
+	 *
+	 * @param {any} value A value to check the type
+	 * @param {...string|class} expected The expected type(s)
+	 * ##### Available Types
+	 * | Type | Description |
+	 * |-----:|:------------|
+	 * | Any type that `typeof` returns | See: {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof} |
+	 * | `bool` | Alias of `boolean` |
+	 * | `int`, `integer` | Matches with integer numbers |
+	 * | `iterable` | Matches with an array or array-like object |
+	 * | A class (constructor function) | Matches with an instance of the class |
+	 *
+	 * @return {any} Just returns the `value` argument if there's no problem
+	 */
+	static check(value, ...expected) {
+		for (let type of expected) {
 			if (isTypeOf(value, type)) return value;
 		}
-		return InvalidType.failed(value, expectedType).trigger();
+		return this.failed(value, expected).trigger();
 	}
 }
 
-function isTypeOf(value, expectedType) {
-	let actualType = typeof value;
-	if (actualType === expectedType) return true;
+function isTypeOf(value, expected) {
+	let actual = typeof value;
+	if (actual === expected) return true;
 
-	switch (actualType) {
+	switch (actual) {
 	case 'object':
-		if (typeof expectedType == 'function') return value instanceof expectedType;
-		if (expectedType == 'iterable') return typeof value[Symbol.iterator] == 'function';
+		if (typeof expected == 'function') return value instanceof expected;
+		if (expected == 'iterable') return typeof value[Symbol.iterator] == 'function';
 		break;
 	case 'boolean':
-		return expectedType == 'bool';
+		return expected == 'bool';
 	case 'number':
-		switch (expectedType) {
+		switch (expected) {
 		case 'int':
 		case 'integer':
 			return isFinite(value) && Math.floor(value) === value;
