@@ -20,7 +20,7 @@
     "test": "nyc mocha",
     "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "docs": "npm run docs:gen && npm run docs:publish",
-    "docs:gen": "npm run docs:clean && jsdoc -c jsdoc.json && cd docs/generic-exceptions && ln -s $npm_package_version latest",
+    "docs:gen": "npm run docs:clean && jsdoc -c jsdoc.json && cd docs/generic-exceptions && unlink latest && ln -s $npm_package_version latest",
     "docs:clean": "rm -rf docs/generic-exceptions/$npm_package_version",
     "docs:publish": "git subtree push --prefix docs/generic-exceptions origin gh-pages"
   },
@@ -62,6 +62,7 @@
     "docs:gen": {
       "patterns": [
         "src",
+        "README.md",
         "jsdoc.json"
       ],
       "inherit": true
