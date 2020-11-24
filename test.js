@@ -31,6 +31,7 @@ function falsy(value) {
 //////  Tests  //
 
 const {
+	NoSuchProp,
 	InvalidType,
 	Exception
 } = require('./bundle');
@@ -270,6 +271,65 @@ describe(`InvalidType`, () => {
 			});
 			assert.doesNotThrow(() => {
 				InvalidType.check('XXX', 'boolean');
+			});
+		});
+	});
+});
+
+describe(`NoSuchProp`, () => {
+	it('.expects(prop)', () => {
+		assert.throws(() => {
+			try {
+				NoSuchProp.check({ X:0, Y:1 }, 'Z');
+			} catch (e) {
+				assert.ok(e.expects('Z'));
+				assert.ok(!e.expects('X'));
+				throw e;
+			}
+		});
+		assert.throws(() => {
+			try {
+				NoSuchProp.check({ X:0, Y:1 }, 'A', 'B');
+			} catch (e) {
+				assert.ok(e.expects('A'));
+				assert.ok(e.expects('B'));
+				assert.ok(!e.expects('X'));
+				throw e;
+			}
+		});
+	});
+
+	describe('static', () => {
+		it(`.failed(obj, prop)`, () => {
+			let ex = NoSuchProp.failed({ X:0, Y:0 }, 'Z');
+			assert.deepEqual(ex.info, {
+				checked: { X:0, Y:0 },
+				expected: 'Z'
+			});
+		});
+		it(`.failed(obj, prop, ...)`, () => {
+			let ex = NoSuchProp.failed({ X:0, Y:0 }, 'A', 'B');
+			assert.deepEqual(ex.info, {
+				checked: { X:0, Y:0 },
+				expected: ['A', 'B']
+			});
+		});
+		it(`.check(obj, prop)`, () => {
+			assert.doesNotThrow(() => {
+				NoSuchProp.check({ X:null }, 'X');
+				NoSuchProp.check({ X:undefined }, 'X');
+				NoSuchProp.check({ X:0, Y:0 }, 'X');
+				NoSuchProp.check({ X:0, Y:0 }, 'X', 'Y');
+				NoSuchProp.check({ X:0, Y:0 }, 'Y', 'Z');
+			});
+			assert.throws(() => { NoSuchProp.check({ X:0, Y:0 }, 'Z') });
+			assert.throws(() => { NoSuchProp.check({ X:0, Y:0 }, 'A', 'B') });
+			assert.throws(() => { NoSuchProp.check({}, 'X') });
+			assert.throws(() => { NoSuchProp.check('XYZ', 'X') });
+			assert.throws(() => {
+				let obj = { X:0, Y:0 };
+				delete obj.X;
+				NoSuchProp.check(obj, 'X');
 			});
 		});
 	});
