@@ -19,8 +19,8 @@
     "build": "rollup src/main.js --file bundle.js --sourcemap --format umd --name generic-exceptions",
     "test": "nyc mocha",
     "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
-    "docs": "npm run docs:clean && npm run docs:gen && npm run docs:publish",
-    "docs:gen": "jsdoc -c jsdoc.json",
+    "docs": "npm run docs:gen && npm run docs:publish",
+    "docs:gen": "npm run docs:clean && jsdoc -c jsdoc.json && cd docs/generic-exceptions && ln -s $npm_package_version latest",
     "docs:clean": "rm -rf docs/generic-exceptions/$npm_package_version",
     "docs:publish": "git subtree push --prefix docs/generic-exceptions origin gh-pages"
   },
@@ -41,9 +41,6 @@
       "jsdoc": {
         "version": "3.6.6"
       },
-      "docolatte": {
-        "version": "1.0.0"
-      },
       "npm-watch": {
         "version": "0.6.0"
       }
@@ -51,7 +48,8 @@
   },
   "watch": {
     "build": {
-      "patterns": "src/*.js",
+      "patterns": "src",
+      "extensions": "js",
       "inherit": true
     },
     "test": {
@@ -61,8 +59,11 @@
       ],
       "inherit": true
     },
-    "docs": {
-      "patterns": "src/*.js",
+    "docs:gen": {
+      "patterns": [
+        "src",
+        "jsdoc.json"
+      ],
       "inherit": true
     }
   },
@@ -81,5 +82,8 @@
   "bugs": {
     "url": "https://github.com/amekusa/generic-exceptions/issues"
   },
-  "homepage": "https://github.com/amekusa/generic-exceptions#readme"
+  "homepage": "https://github.com/amekusa/generic-exceptions#readme",
+  "devDependencies": {
+    "docolatte": "^2.7.0"
+  }
 }
