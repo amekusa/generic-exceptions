@@ -20,6 +20,9 @@
     "docolatte": {
       "branding": {
         "title": "Generic Exceptions"
+      },
+      "footer": {
+        "copyright": "&copy; 2020 Satoshi Soma (<a href=\"https://amekusa.com\">amekusa.com</a>)"
       }
     }
   },
@@ -28,5 +31,8 @@
     "template": "node_modules/docolatte",
     "encoding": "utf8",
     "recurse": true
+  },
+  "markdown": {
+    "hardwrap": true
   }
 }
