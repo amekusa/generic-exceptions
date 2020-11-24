@@ -28,8 +28,10 @@ class NoSuchProp extends Exception {
 	 * @return {object} Just returns the `obj` argument if there's no problem
 	 */
 	static check(obj, ...prop) {
-		for (let I of prop) {
-			if (obj[I] !== undefined) return obj;
+		if (typeof obj == 'object') {
+			for (let I of prop) {
+				if (I in obj) return obj;
+			}
 		}
 		return this.failed(obj, ...prop).trigger();
 	}
