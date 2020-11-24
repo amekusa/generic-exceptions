@@ -103,6 +103,8 @@ class Exception extends Error {
 	 * Checks if `value` matches with the `expected` values.
 	 * If it does, just returns `value`. Otherwise, [triggers]{@link Exception#trigger} an exception.
 	 *
+	 * The triggered exception holds `value` and `expected` as `.info.checked` and `.info.expected`.
+	 *
 	 * @example <caption>Value Checking</caption>
 	 * var value = 1;
 	 * var checked = Exception.check(value, 0);       // Throws an exception

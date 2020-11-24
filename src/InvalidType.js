@@ -58,6 +58,9 @@ class InvalidType extends Exception {
 	 * Checks if the type of `value` matches with `expected`. If it does, just returns `value`.
 	 * Otherwise, [triggers]{@link InvalidType#trigger} an exception.
 	 *
+	 * The triggered exception holds `value` and `expected` as `.info.checked` and `.info.expected`.
+	 * And the actual type is stored in `.info.actual`.
+	 *
 	 * @param {any} value A value to check the type
 	 * @param {...string|class} expected The expected type(s)
 	 * ##### Available Types

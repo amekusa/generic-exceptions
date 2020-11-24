@@ -23,6 +23,9 @@ class NoSuchProp extends Exception {
 	/**
 	 * Checks if `obj` has `prop` as its property. If it doesn't, [triggers]{@link NoSuchProp#trigger} an exception.
 	 * Otherwise, just returns `obj`.
+	 *
+	 * The triggered exception holds `obj` and `prop` as `.info.checked` and `.info.expected`.
+	 * 
 	 * @param {object} obj The object to check
 	 * @param {...string} prop The property name to check if it exists
 	 * @return {object} Just returns the `obj` argument if there's no problem
