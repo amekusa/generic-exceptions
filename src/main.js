@@ -7,8 +7,10 @@
 
 import Exception from './Exception.js';
 import InvalidType from './InvalidType.js';
+import NoSuchProp from './NoSuchProp.js';
 
 export {
+	NoSuchProp,
 	InvalidType,
 	Exception
 };
