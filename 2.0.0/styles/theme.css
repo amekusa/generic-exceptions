@@ -543,6 +543,9 @@ main dl > dd {
   grid-column: 2;
   margin: 0;
 }
+main dl:empty {
+  display: none;
+}
 main dl.details {
   margin-top: 1.5rem;
 }
