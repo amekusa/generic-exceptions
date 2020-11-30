@@ -83,14 +83,18 @@ class InvalidType extends Exception {
 }
 
 function isTypeOf(value, expected) {
+	if (typeof expected == 'function') return value instanceof expected;
+
+	if (expected == 'iterable') {
+		if (value === null) return false;
+		if (value === undefined) return false;
+		return typeof value[Symbol.iterator] == 'function';
+	}
+
 	let actual = typeof value;
 	if (actual === expected) return true;
 
 	switch (actual) {
-	case 'object':
-		if (typeof expected == 'function') return value instanceof expected;
-		if (expected == 'iterable') return typeof value[Symbol.iterator] == 'function';
-		break;
 	case 'boolean':
 		return expected == 'bool';
 	case 'number':

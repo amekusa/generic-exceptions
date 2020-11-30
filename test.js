@@ -227,6 +227,7 @@ describe(`InvalidType`, () => {
 			assert.doesNotThrow(() => {
 				InvalidType.check(iterable, 'iterable');
 				InvalidType.check([], 'iterable');
+				InvalidType.check('string', 'iterable');
 			});
 			assert.throws(() => {
 				InvalidType.check({}, 'iterable');
@@ -241,6 +242,14 @@ describe(`InvalidType`, () => {
 			assert.throws(() => { InvalidType.check(1, 'bool') });
 			assert.throws(() => { InvalidType.check(1.2, 'int') });
 			assert.throws(() => { InvalidType.check(1.2, 'integer') });
+		});
+		it(`.check(value, Callable)`, () => {
+			class Callable extends Function {}
+			let callable = new Callable();
+			assert.doesNotThrow(() => {
+				InvalidType.check(callable, 'function');
+				InvalidType.check(callable, Callable);
+			});
 		});
 		it(`.check(value, type, ...)`, () => {
 			assert.doesNotThrow(() => {
