@@ -85,6 +85,6 @@
   },
   "homepage": "https://github.com/amekusa/generic-exceptions#readme",
   "devDependencies": {
-    "docolatte": "^2.7.0"
+    "docolatte": "^2.8.1"
   }
 }
