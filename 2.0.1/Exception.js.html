@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>JSDoc: Source: Exception.js</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <script src="scripts/main.js"></script>
+
+    <!-- <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css"> -->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow-night-eighties.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="styles/theme.css">
+</head>
+<body>
+<div class="page">
+
+    <header class="masthead">
+        <div class="branding">
+            <a href="index.html">Generic Exceptions</a>
+        </div>
+        <div class="topbar">
+            <h1 class="page-title">
+                <a href="#">Source: Exception.js</a>
+            </h1>
+        </div>
+    </header>
+
+    <main class="has-footer">
+        
+
+
+
+    
+<article class="src">
+    <pre class="prettyprint source linenums"><code>let options;
+
+/**
+ * The base class of all the other exceptions.
+ */
+class Exception extends Error {
+	/**
+	 * @param {string} [msg] Message
+	 * @param {any} [info] Additional information for debug
+	 */
+	constructor(msg = null, info = null) {
+		super((typeof msg == 'string' ? msg : '') + (info ? `\n> info: ${JSON.stringify(info, null, 2)}` : ''));
+		this.name = this.constructor.name;
+		this._info = info;
+	}
+	/**
+	 * Additional informations for debug.
+	 * @type {any}
+	 */
+	get info() {
+		return this._info;
+	}
+	/**
+	 * Throws this exception if `handler` option is not set.
+	 * If `handler` option is set, calls it and returns the result.
+	 * @see Exception.option
+	 * @return {any} The result of [option.handler]{@link Exception.option} function
+	 * @throws This exception
+	 */
+	trigger() {
+		if (typeof options.handler != 'function') throw this;
+		return options.handler(this);
+	}
+	/**
+	 * Returns `true` if `value` equals to or is included in [info.expected]{@link Exception#info}. Otherwise `false`.
+	 * Recommended for using alongside of {@link Exception.check} method.
+	 *
+	 * @example
+	 * value = 2;
+	 * try {
+	 *   Exception.check(value, 0, 1); // Throws
+	 * } catch (e) {
+	 *   if (e.expects(0)) { ... } // true
+	 *   if (e.expects(1)) { ... } // true
+	 *   if (e.expects(2)) { ... } // false
+	 * }
+	 *
+	 * @param {any} value An expectation
+	 * @return {boolean}
+	 */
+	expects(value) {
+		if (!('expected' in this.info)) return false;
+		return Array.isArray(this.info.expected) ?
+			this.info.expected.includes(value) : (value === this.info.expected);
+	}
+	/**
+	 * Resets all the options to the default values.
+	 * @return {class} This exception class
+	 */
+	static reset() {
+		options = {
+			handler: null
+		};
+		return this;
+	}
+	/**
+	 * Returns the value of the option specified by `name`.
+	 * If `value` is provided, assigns the value to the option instead of returning it.
+	 * You can customize the default behavior of `Exception` at some level by changing the option values.
+	 *
+	 * ##### Available options:
+	 * | Name | Type | Description |
+	 * |-----:|:-----|:------------|
+	 * | `handler` | function | Runs when [trigger()]{@link Exception#trigger} is called. Receives the triggered exception instance as the argument |
+	 *
+	 * @param {string} name Option name
+	 * @param {any} [value] Option value to set
+	 * @return {any|class} The option value, or this exception class if `value` is provided
+	 */
+	static option(name, value = undefined) {
+		if (arguments.length &lt; 2) return options[name];
+		options[name] = value;
+		return this;
+	}
+	/**
+	 * If `set` is not provided, returns all the current option values in a plain object form.
+	 * If `set` is provided, assigns each value in `set` to the option corresponding with the key.
+	 * @param {object} [set] Multiple key-value pairs
+	 * @return {object|class} The current options in a plain object form, or this exception class if `set` is provided
+	 */
+	static options(set) {
+		if (!arguments.length) return Object.assign({}, options);
+		Object.assign(options, set);
+		return this;
+	}
+	static failed(checked, ...expected) {
+		return new this(`unexpected value`, {
+			checked,
+			expected: expected.length > 1 ? expected : expected[0]
+		});
+	}
+	/**
+	 * Checks if `value` matches with the `expected` values.
+	 * If it does, just returns `value`. Otherwise, [triggers]{@link Exception#trigger} an exception.
+	 *
+	 * The triggered exception holds `value` and `expected` as `.info.checked` and `.info.expected`.
+	 *
+	 * @example &lt;caption>Value Checking&lt;/caption>
+	 * var value = 1;
+	 * var checked = Exception.check(value, 0);       // Throws an exception
+	 * var checked = Exception.check(value, 1);       // OK
+	 * var checked = Exception.check(value, 0, 1, 2); // OK (multiple expectations)
+	 *
+	 * @example &lt;caption>Using .info for debug inside 'catch' block&lt;/caption>
+	 * var value = 3;
+	 * try {
+	 *   Exception.check(value, 0, 1, 2); // Throws
+	 * } catch (e) {
+	 *   console.debug( e.info.checked  ); // 3
+	 *   console.debug( e.info.expected ); // [0, 1, 2]
+	 * }
+	 *
+	 * @param {any} value A value to check
+	 * @param {...any} expected Expected value(s)
+	 * @return {any} Just returns the `value` argument if there's no problem
+	 */
+	static check(value, ...expected) {
+		if (arguments.length > 1) {
+			for (let I of expected) {
+				if (value === I) return value;
+			}
+		} else if (value) return value;
+		return this.failed(value, ...expected).trigger();
+	}
+}
+
+Exception.reset();
+
+export default Exception;
+</code></pre>
+</article>
+
+
+
+
+
+
+        
+        <footer class="colophon">
+            
+            <p class="copyright">&copy; 2020 Satoshi Soma (<a href="https://amekusa.com">amekusa.com</a>)</p>
+            
+            
+            <p class="credits">
+                Documentation generated by <a rel="external" href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a><br>
+                
+                on <time datetime="2020-11-30T13:36:06.509Z">Mon Nov 30 2020 22:36:06 GMT+0900 (Japan Standard Time)</time><br>
+                
+                using <a rel="external" href="https://github.com/amekusa/docolatte">docolatte</a> theme
+            </p>
+            
+        </footer>
+        
+    </main>
+
+    <input id="docolatte-shows-sidebar" type="checkbox">
+    <label class="overlay" for="docolatte-shows-sidebar"></label>
+    <label class="menu-button" for="docolatte-shows-sidebar">
+        <div class="shape">
+            <i class="icon burger">
+                <span class="top"></span>
+                <span class="middle"></span>
+                <span class="bottom"></span>
+            </i>
+        </div>
+    </label>
+
+    <div class="sidebar">
+        <div class="toc">
+            <h2><a href="index.html">Home</a></h2><div class="search-box">
+	<input class="search" type="text" placeholder="type to search…"><i class="icon magnifier"></i>
+	<ol class="suggestions"></ol>
+	<div class="hint hidden not-for-mobile">
+		<p><b>Hint:</b> You don't need to click on the search box to input.</p>
+		<p class="more">Just start typing your words at <strong>any time</strong> to search for it.</p>
+	</div>
+</div>
+<nav><h3>Classes</h3><ul><li><a href="Exception.html">Exception</a><ul class="methods"><li><a href="Exception.html#.check">check</a></li><li><a href="Exception.html#.option">option</a></li><li><a href="Exception.html#.options">options</a></li><li><a href="Exception.html#.reset">reset</a></li><li><a href="Exception.html#expects">expects</a></li><li><a href="Exception.html#trigger">trigger</a></li></ul></li><li><a href="InvalidType.html">InvalidType</a><ul class="methods"><li><a href="InvalidType.html#.check">check</a></li><li><a href="InvalidType.html#expects">expects</a></li><li><a href="InvalidType.html#trigger">trigger</a></li></ul></li><li><a href="NoSuchProp.html">NoSuchProp</a><ul class="methods"><li><a href="NoSuchProp.html#.check">check</a></li><li><a href="NoSuchProp.html#expects">expects</a></li><li><a href="NoSuchProp.html#trigger">trigger</a></li></ul></li></ul></nav>
+        </div>
+    </div>
+</div>
+
+<script>prettyPrint()</script>
+<script src="scripts/linenumber.js"></script>
+
+<script id="docolatte-search-list" type="application/json">[{"url":"Exception.html","name":"Exception","longname":"Exception","classdesc":"<p>The base class of all the other exceptions.</p>"},{"url":"InvalidType.html","name":"InvalidType","longname":"InvalidType","classdesc":"<p>Thrown to indicate that the type of a value isn't expected.</p>","examples":[{"caption":"Basic Usage","code":"function greet(name) {\n  var checked = InvalidType.check(name, 'string');\n  alert('Hello, ' + checked);\n}\ngreet('John'); // \"Hello, John\"\ngreet(1234);   // Throws: \"unexpected type of value ...\""},{"caption":"Multiple Expectations","code":"var value = 'ABC';\nInvalidType.check(value, 'boolean', 'string', 'object'); // OK"},{"caption":"Class Checking","code":"class Beagle extends Dog {\n  ...\n}\nvar oliver = new Beagle();\nInvalidType.check(oliver, Dog);      // OK\nInvalidType.check(oliver, Beagle);   // OK\nInvalidType.check(oliver, ShibaInu); // Throws"},{"caption":"Using .info for debug inside 'catch'","code":"value = 123;\ntry {\n  InvalidType.check(value, 'string', 'object');\n} catch (e) {\n  console.debug( e.info.checked  ); // 123\n  console.debug( e.info.expected ); // ['string', 'object']\n  console.debug( e.info.actual   ); // 'number'\n}"}]},{"url":"NoSuchProp.html","name":"NoSuchProp","longname":"NoSuchProp","classdesc":"<p>Thrown to indicate that an object doesn't have expected properties.</p>"},{"url":"Exception.html#.check","name":"check","longname":"Exception.check","description":"<p>Checks if <code>value</code> matches with the <code>expected</code> values.<br>\nIf it does, just returns <code>value</code>. Otherwise, [triggers]{@link Exception#trigger} an exception.</p>\n<p>The triggered exception holds <code>value</code> and <code>expected</code> as <code>.info.checked</code> and <code>.info.expected</code>.</p>","examples":[{"caption":"Value Checking","code":"var value = 1;\nvar checked = Exception.check(value, 0);       // Throws an exception\nvar checked = Exception.check(value, 1);       // OK\nvar checked = Exception.check(value, 0, 1, 2); // OK (multiple expectations)"},{"caption":"Using .info for debug inside 'catch' block","code":"var value = 3;\ntry {\n  Exception.check(value, 0, 1, 2); // Throws\n} catch (e) {\n  console.debug( e.info.checked  ); // 3\n  console.debug( e.info.expected ); // [0, 1, 2]\n}"}]},{"url":"Exception.html#.option","name":"option","longname":"Exception.option","description":"<p>Returns the value of the option specified by <code>name</code>.<br>\nIf <code>value</code> is provided, assigns the value to the option instead of returning it.<br>\nYou can customize the default behavior of <code>Exception</code> at some level by changing the option values.</p>\n<h5>Available options:</h5>\n<table>\n<thead>\n<tr>\n<th style=\"text-align:right\">Name</th>\n<th style=\"text-align:left\">Type</th>\n<th style=\"text-align:left\">Description</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td style=\"text-align:right\"><code>handler</code></td>\n<td style=\"text-align:left\">function</td>\n<td style=\"text-align:left\">Runs when [trigger()]{@link Exception#trigger} is called. Receives the triggered exception instance as the argument</td>\n</tr>\n</tbody>\n</table>"},{"url":"Exception.html#.options","name":"options","longname":"Exception.options","description":"<p>If <code>set</code> is not provided, returns all the current option values in a plain object form.<br>\nIf <code>set</code> is provided, assigns each value in <code>set</code> to the option corresponding with the key.</p>"},{"url":"Exception.html#.reset","name":"reset","longname":"Exception.reset","description":"<p>Resets all the options to the default values.</p>"},{"url":"Exception.html#expects","name":"expects","longname":"Exception#expects","description":"<p>Returns <code>true</code> if <code>value</code> equals to or is included in [info.expected]{@link Exception#info}. Otherwise <code>false</code>.<br>\nRecommended for using alongside of {@link Exception.check} method.</p>","examples":[{"caption":"","code":"value = 2;\ntry {\n  Exception.check(value, 0, 1); // Throws\n} catch (e) {\n  if (e.expects(0)) { ... } // true\n  if (e.expects(1)) { ... } // true\n  if (e.expects(2)) { ... } // false\n}"}]},{"url":"Exception.html#info","name":"info","longname":"Exception#info","description":"<p>Additional informations for debug.</p>"},{"url":"Exception.html#trigger","name":"trigger","longname":"Exception#trigger","description":"<p>Throws this exception if <code>handler</code> option is not set.<br>\nIf <code>handler</code> option is set, calls it and returns the result.</p>"},{"url":"InvalidType.html#.check","name":"check","longname":"InvalidType.check","description":"<p>Checks if the type of <code>value</code> matches with <code>expected</code>. If it does, just returns <code>value</code>.<br>\nOtherwise, [triggers]{@link InvalidType#trigger} an exception.</p>\n<p>The triggered exception holds <code>value</code> and <code>expected</code> as <code>.info.checked</code> and <code>.info.expected</code>.<br>\nAnd the actual type is stored in <code>.info.actual</code>.</p>"},{"url":"InvalidType.html#expects","name":"expects","longname":"InvalidType#expects","description":"<p>Returns if this exception expected <code>type</code>.</p>"},{"url":"InvalidType.html#info","name":"info","longname":"InvalidType#info","description":"<p>Additional informations for debug.</p>"},{"url":"InvalidType.html#trigger","name":"trigger","longname":"InvalidType#trigger","description":"<p>Throws this exception if <code>handler</code> option is not set.<br>\nIf <code>handler</code> option is set, calls it and returns the result.</p>"},{"url":"NoSuchProp.html#.check","name":"check","longname":"NoSuchProp.check","description":"<p>Checks if <code>obj</code> has <code>prop</code> as its property. If it doesn't, [triggers]{@link NoSuchProp#trigger} an exception.<br>\nOtherwise, just returns <code>obj</code>.</p>\n<p>The triggered exception holds <code>obj</code> and <code>prop</code> as <code>.info.checked</code> and <code>.info.expected</code>.</p>"},{"url":"NoSuchProp.html#expects","name":"expects","longname":"NoSuchProp#expects","description":"<p>Checks if <code>prop</code> is expected by this exception.</p>"},{"url":"NoSuchProp.html#info","name":"info","longname":"NoSuchProp#info","description":"<p>Additional informations for debug.</p>"},{"url":"NoSuchProp.html#trigger","name":"trigger","longname":"NoSuchProp#trigger","description":"<p>Throws this exception if <code>handler</code> option is not set.<br>\nIf <code>handler</code> option is set, calls it and returns the result.</p>"}]</script>
+<script id="docolatte-search-index" type="application/json">{"keys":[{"path":["name"],"id":"name","weight":10,"src":"name"},{"path":["longname"],"id":"longname","weight":9,"src":"longname"},{"path":["classdesc"],"id":"classdesc","weight":6,"src":"classdesc"},{"path":["description"],"id":"description","weight":6,"src":"description"},{"path":["examples"],"id":"examples","weight":1,"src":"examples"}],"records":[{"i":0,"$":{"0":{"v":"Exception","n":1},"1":{"v":"Exception","n":1},"2":{"v":"<p>The base class of all the other exceptions.</p>","n":0.354}}},{"i":1,"$":{"0":{"v":"InvalidType","n":1},"1":{"v":"InvalidType","n":1},"2":{"v":"<p>Thrown to indicate that the type of a value isn't expected.</p>","n":0.302},"4":[]}},{"i":2,"$":{"0":{"v":"NoSuchProp","n":1},"1":{"v":"NoSuchProp","n":1},"2":{"v":"<p>Thrown to indicate that an object doesn't have expected properties.</p>","n":0.316}}},{"i":3,"$":{"0":{"v":"check","n":1},"1":{"v":"Exception.check","n":1},"3":{"v":"<p>Checks if <code>value</code> matches with the <code>expected</code> values.<br>\nIf it does, just returns <code>value</code>. Otherwise, [triggers]{@link Exception#trigger} an exception.</p>\n<p>The triggered exception holds <code>value</code> and <code>expected</code> as <code>.info.checked</code> and <code>.info.expected</code>.</p>","n":0.189},"4":[]}},{"i":4,"$":{"0":{"v":"option","n":1},"1":{"v":"Exception.option","n":1},"3":{"v":"<p>Returns the value of the option specified by <code>name</code>.<br>\nIf <code>value</code> is provided, assigns the value to the option instead of returning it.<br>\nYou can customize the default behavior of <code>Exception</code> at some level by changing the option values.</p>\n<h5>Available options:</h5>\n<table>\n<thead>\n<tr>\n<th style=\"text-align:right\">Name</th>\n<th style=\"text-align:left\">Type</th>\n<th style=\"text-align:left\">Description</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td style=\"text-align:right\"><code>handler</code></td>\n<td style=\"text-align:left\">function</td>\n<td style=\"text-align:left\">Runs when [trigger()]{@link Exception#trigger} is called. Receives the triggered exception instance as the argument</td>\n</tr>\n</tbody>\n</table>","n":0.132}}},{"i":5,"$":{"0":{"v":"options","n":1},"1":{"v":"Exception.options","n":1},"3":{"v":"<p>If <code>set</code> is not provided, returns all the current option values in a plain object form.<br>\nIf <code>set</code> is provided, assigns each value in <code>set</code> to the option corresponding with the key.</p>","n":0.18}}},{"i":6,"$":{"0":{"v":"reset","n":1},"1":{"v":"Exception.reset","n":1},"3":{"v":"<p>Resets all the options to the default values.</p>","n":0.354}}},{"i":7,"$":{"0":{"v":"expects","n":1},"1":{"v":"Exception#expects","n":1},"3":{"v":"<p>Returns <code>true</code> if <code>value</code> equals to or is included in [info.expected]{@link Exception#info}. Otherwise <code>false</code>.<br>\nRecommended for using alongside of {@link Exception.check} method.</p>","n":0.218},"4":[]}},{"i":8,"$":{"0":{"v":"info","n":1},"1":{"v":"Exception#info","n":1},"3":{"v":"<p>Additional informations for debug.</p>","n":0.5}}},{"i":9,"$":{"0":{"v":"trigger","n":1},"1":{"v":"Exception#trigger","n":1},"3":{"v":"<p>Throws this exception if <code>handler</code> option is not set.<br>\nIf <code>handler</code> option is set, calls it and returns the result.</p>","n":0.229}}},{"i":10,"$":{"0":{"v":"check","n":1},"1":{"v":"InvalidType.check","n":1},"3":{"v":"<p>Checks if the type of <code>value</code> matches with <code>expected</code>. If it does, just returns <code>value</code>.<br>\nOtherwise, [triggers]{@link InvalidType#trigger} an exception.</p>\n<p>The triggered exception holds <code>value</code> and <code>expected</code> as <code>.info.checked</code> and <code>.info.expected</code>.<br>\nAnd the actual type is stored in <code>.info.actual</code>.</p>","n":0.167}}},{"i":11,"$":{"0":{"v":"expects","n":1},"1":{"v":"InvalidType#expects","n":1},"3":{"v":"<p>Returns if this exception expected <code>type</code>.</p>","n":0.408}}},{"i":12,"$":{"0":{"v":"info","n":1},"1":{"v":"InvalidType#info","n":1},"3":{"v":"<p>Additional informations for debug.</p>","n":0.5}}},{"i":13,"$":{"0":{"v":"trigger","n":1},"1":{"v":"InvalidType#trigger","n":1},"3":{"v":"<p>Throws this exception if <code>handler</code> option is not set.<br>\nIf <code>handler</code> option is set, calls it and returns the result.</p>","n":0.229}}},{"i":14,"$":{"0":{"v":"check","n":1},"1":{"v":"NoSuchProp.check","n":1},"3":{"v":"<p>Checks if <code>obj</code> has <code>prop</code> as its property. If it doesn't, [triggers]{@link NoSuchProp#trigger} an exception.<br>\nOtherwise, just returns <code>obj</code>.</p>\n<p>The triggered exception holds <code>obj</code> and <code>prop</code> as <code>.info.checked</code> and <code>.info.expected</code>.</p>","n":0.189}}},{"i":15,"$":{"0":{"v":"expects","n":1},"1":{"v":"NoSuchProp#expects","n":1},"3":{"v":"<p>Checks if <code>prop</code> is expected by this exception.</p>","n":0.354}}},{"i":16,"$":{"0":{"v":"info","n":1},"1":{"v":"NoSuchProp#info","n":1},"3":{"v":"<p>Additional informations for debug.</p>","n":0.5}}},{"i":17,"$":{"0":{"v":"trigger","n":1},"1":{"v":"NoSuchProp#trigger","n":1},"3":{"v":"<p>Throws this exception if <code>handler</code> option is not set.<br>\nIf <code>handler</code> option is set, calls it and returns the result.</p>","n":0.229}}}]}</script>
+<script id="docolatte-search-options" type="application/json">{"keys":[{"name":"name","weight":10},{"name":"longname","weight":9},{"name":"classdesc","weight":6},{"name":"description","weight":6},{"name":"examples","weight":1}]}</script>
+
+<script>
+    var _SEARCH = {
+        list: document.getElementById('docolatte-search-list').innerHTML,
+        index: document.getElementById('docolatte-search-index').innerHTML,
+        options: document.getElementById('docolatte-search-options').innerHTML
+    };
+</script>
+
+</body>
+</html>
