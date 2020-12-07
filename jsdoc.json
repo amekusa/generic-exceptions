@@ -19,7 +19,12 @@
     },
     "docolatte": {
       "branding": {
-        "title": "Generic Exceptions"
+        "title": "Generic Exceptions",
+        "link": "https://github.com/amekusa/generic-exceptions",
+        "icon": "github",
+        "font": {
+          "size": ".75em"
+        }
       },
       "footer": {
         "copyright": "&copy; 2020 Satoshi Soma (<a href=\"https://amekusa.com\">amekusa.com</a>)"
