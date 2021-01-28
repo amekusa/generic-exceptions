@@ -10,7 +10,7 @@ class Exception extends Error {
 	 * @param {boolean} [hidesInfo=false] Whether or not to hide `info`
 	 */
 	constructor(msg = null, info = null, hidesInfo = false) {
-		super((typeof msg == 'string' ? msg : '') + ((info && !hidesInfo) ? `\n> info: ${JSON.stringify(info, null, 2)}` : ''));
+		super((msg ? format(msg, info) : '') + ((info && !hidesInfo) ? `\n> info: ${JSON.stringify(info, null, 2)}` : ''));
 		this.name = this.constructor.name;
 		this._info = info;
 	}
@@ -133,6 +133,14 @@ class Exception extends Error {
 		} else if (value) return value;
 		return this.failed(value, ...expected).trigger();
 	}
+}
+
+function format(str, data) {
+	let r = str;
+	if (typeof data == 'object') {
+		for (let i in data) r = r.replaceAll(`%${i}%`, data[i]);
+	}
+	return r;
 }
 
 Exception.reset();
