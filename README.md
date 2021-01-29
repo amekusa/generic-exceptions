@@ -2,11 +2,12 @@
 
 [![Build Status](https://travis-ci.org/amekusa/generic-exceptions.svg?branch=master)](https://travis-ci.org/amekusa/generic-exceptions) [![codecov](https://codecov.io/gh/amekusa/generic-exceptions/branch/master/graph/badge.svg)](https://codecov.io/gh/amekusa/generic-exceptions) [![npm](https://img.shields.io/badge/dynamic/json?label=npm%0Apackage&query=%24%5B%27dist-tags%27%5D%5B%27latest%27%5D&url=https%3A%2F%2Fregistry.npmjs.org%2Fgeneric-exceptions%2F)](https://www.npmjs.com/package/generic-exceptions)
 
-[:blue_book: Documentations](https://amekusa.github.io/generic-exceptions/latest/)
+[📘 Documentations](https://amekusa.github.io/generic-exceptions/latest/)
 
 
 | Version | Changes |
-|--------:|:------------|
+|--------:|:--------|
+| 3.0.0 | <ul><li>Moved some basic features of `Exception` to the new class: `InvalidValue`</li> <li>New feature: formatting the message</li></ul> |
 | 2.0.0 | New exception class: `NoSuchProp` |
 | 1.3.0 | Supported multiple expectations for `.check()` |
 
@@ -23,10 +24,11 @@ Then, `require()` the exception classes that you want to use:
 const { <ExceptionClass>, ... } = require('generic-exceptions');
 ```
 
-##### Available Exceptions (v2.0.0+):
+##### Available Exceptions (v3.0.0+):
 
 - `NoSuchProp`
 - `InvalidType`
+- `InvalidValue`
 - `Exception`
 
 ## APIs
@@ -36,7 +38,7 @@ The full documentations are here: https://amekusa.github.io/generic-exceptions/l
 
 ---
 
-### Exception
+### class Exception
 
 `Exception` class is the base class of all the other exceptions. That means every exception basically derives the methods and the properties from this class. Also `Exception` is a subclass of [Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error).
 
@@ -60,7 +62,7 @@ Throws the instance if `handler` option ( explained later ) is not set.
 
 ---
 
-#### `static` .option ( name[, value] )
+#### static .option ( name[, value] )
 
 Returns the option value by `name`. If `value` is provided, assigns the value to the option instead of returning it.  
 You can customize the default behavior of `Exception` at some level by changing the option values.
@@ -80,52 +82,7 @@ new Exception('error').trigger(); // This doesn't throw because of the handler
 
 ---
 
-#### static .check ( value, expected[, ... ] ] )
-
-Checks if `value` matches with the `expected` values.
-If it does, just returns `value`. Otherwise, triggers an exception.
-
-The triggered exception holds `value` and `expected` as `.info.checked` and `.info.expected`.
-
-```js
-var X = 1;
-try {
-  Exception.check(X, '1'); // Throws an exception (because 1 is not '1')
-} catch (e) {
-  console.error(e.info); // { checked: 1, expected: '1' }
-}
-```
-
-You can also pass a multiple number of expectations:
-
-```js
-var X = 1;
-try {
-  Exception.check(X, 0, 1, 2); // OK     (expects: 0, 1, or 2)
-  Exception.check(X, 3, 4, 5); // Throws (expects: 3, 4, or 5)
-} catch (e) {
-  console.error(e.info); // { checked: 1, expected: [3, 4, 5] }
-}
-```
-
-`.expects()` method is useful for checking what value is expected for:
-
-```js
-var X = 1;
-var expectations = [3, 4, 5];
-try {
-  Exception.check(X, ...expectations); // Throws (expects: 3, 4, or 5)
-} catch (e) {
-  if (e.expects(3)) { ... } // true
-  if (e.expects(4)) { ... } // true
-  if (e.expects(5)) { ... } // true
-  if (e.expects(6)) { ... } // false
-}
-```
-
----
-
-### InvalidType
+### class InvalidType
 
 Thrown to indicate that the type of a value isn't expected.
 
@@ -195,4 +152,5 @@ Additionally, `InvalidType` supports some special type keywords that can be pass
 
 ---
 
-&copy; 2020 [Satoshi Soma](https://amekusa.com)
+## Author
+[Satoshi Soma](https://amekusa.com)

@@ -2,23 +2,34 @@ let options;
 
 /**
  * The base class of all the other exceptions.
+ * @extends Error
  */
 class Exception extends Error {
 	/**
 	 * @param {string} [msg] Message
 	 * @param {any} [info] Additional information for debug
+	 * @param {boolean} [hidesInfo=false] Whether or not to hide `info`
 	 */
-	constructor(msg = null, info = null) {
-		super((typeof msg == 'string' ? msg : '') + (info ? `\n> info: ${JSON.stringify(info, null, 2)}` : ''));
-		this.name = this.constructor.name;
+	constructor(msg = null, info = null, hidesInfo = false) {
+		super((msg ? format(msg, info) : format(new.target.message)) + ((info && !hidesInfo) ? `\n[${new.target.name}] To debug, catch me and see .info: ${JSON.stringify(info, null, 2)}` : ''));
+		this.name = new.target.name;
 		this._info = info;
 	}
 	/**
 	 * Additional informations for debug.
 	 * @type {any}
+	 * @readonly
 	 */
 	get info() {
 		return this._info;
+	}
+	/**
+	 * The default message for this exception class.
+	 * @type {string}
+	 * @readonly
+	 */
+	static get message() {
+		return '';
 	}
 	/**
 	 * Throws this exception if `handler` option is not set.
@@ -32,26 +43,13 @@ class Exception extends Error {
 		return options.handler(this);
 	}
 	/**
-	 * Returns `true` if `value` equals to or is included in [info.expected]{@link Exception#info}. Otherwise `false`.
-	 * Recommended for using alongside of {@link Exception.check} method.
-	 *
-	 * @example
-	 * value = 2;
-	 * try {
-	 *   Exception.check(value, 0, 1); // Throws
-	 * } catch (e) {
-	 *   if (e.expects(0)) { ... } // true
-	 *   if (e.expects(1)) { ... } // true
-	 *   if (e.expects(2)) { ... } // false
-	 * }
-	 *
+	 * Returns whether this exception has expected `value` specifically.
 	 * @param {any} value An expectation
 	 * @return {boolean}
+	 * @abstract
 	 */
 	expects(value) {
-		if (!('expected' in this.info)) return false;
-		return Array.isArray(this.info.expected) ?
-			this.info.expected.includes(value) : (value === this.info.expected);
+		return false; // noop
 	}
 	/**
 	 * Resets all the options to the default values.
@@ -93,47 +91,24 @@ class Exception extends Error {
 		Object.assign(options, set);
 		return this;
 	}
-	static failed(checked, ...expected) {
-		return new this(`unexpected value`, {
-			checked,
-			expected: expected.length > 1 ? expected : expected[0]
-		});
-	}
 	/**
-	 * Checks if `value` matches with the `expected` values.
-	 * If it does, just returns `value`. Otherwise, [triggers]{@link Exception#trigger} an exception.
-	 *
-	 * The triggered exception holds `value` and `expected` as `.info.checked` and `.info.expected`.
-	 *
-	 * @example <caption>Value Checking</caption>
-	 * var value = 1;
-	 * var checked = Exception.check(value, 0);       // Throws an exception
-	 * var checked = Exception.check(value, 1);       // OK
-	 * var checked = Exception.check(value, 0, 1, 2); // OK (multiple expectations)
-	 *
-	 * @example <caption>Using .info for debug inside 'catch' block</caption>
-	 * var value = 3;
-	 * try {
-	 *   Exception.check(value, 0, 1, 2); // Throws
-	 * } catch (e) {
-	 *   console.debug( e.info.checked  ); // 3
-	 *   console.debug( e.info.expected ); // [0, 1, 2]
-	 * }
-	 *
+	 * Checks whether `value` meets the expected condition varied by each subclass.
 	 * @param {any} value A value to check
-	 * @param {...any} expected Expected value(s)
-	 * @return {any} Just returns the `value` argument if there's no problem
+	 * @return {any} the `value` argument untouched if there's no problem. Otherwise triggers the exception.
+	 * @abstract
 	 */
-	static check(value, ...expected) {
-		if (arguments.length > 1) {
-			for (let I of expected) {
-				if (value === I) return value;
-			}
-		} else if (value) return value;
-		return this.failed(value, ...expected).trigger();
+	static check(value) {
+		return value; // noop
 	}
 }
 
-Exception.reset();
+function format(str, data) {
+	let r = str;
+	if (typeof data == 'object') {
+		for (let i in data) r = r.replaceAll(`%${i}%`, data[i]);
+	}
+	return r;
+}
 
+Exception.reset();
 export default Exception;
