@@ -10,8 +10,8 @@ class Exception extends Error {
 	 * @param {boolean} [hidesInfo=false] Whether or not to hide `info`
 	 */
 	constructor(msg = null, info = null, hidesInfo = false) {
-		super((msg ? format(msg, info) : '') + ((info && !hidesInfo) ? `\n> info: ${JSON.stringify(info, null, 2)}` : ''));
-		this.name = this.constructor.name;
+		super((msg ? format(msg, info) : '') + ((info && !hidesInfo) ? `\n[${new.target.name}] To debug, catch me and see .info: ${JSON.stringify(info, null, 2)}` : ''));
+		this.name = new.target.name;
 		this._info = info;
 	}
 	/**
