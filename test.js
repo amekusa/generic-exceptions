@@ -105,6 +105,18 @@ describe(`Exception`, () => {
 			});
 		});
 	});
+
+	describe(`extending`, () => {
+		class C extends Exception {
+			static get message() {
+				return 'DEFAULT_MESSAGE';
+			}
+		}
+		it(`default message`, () => {
+			let c = new C();
+			assert.equal(c.message, 'DEFAULT_MESSAGE');
+		});
+	});
 });
 
 describe(`InvalidValue`, () => {
