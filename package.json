@@ -13,10 +13,11 @@
     "require": "./bundle.js"
   },
   "scripts": {
-    "prepublishOnly": "npm run test && npm run build",
+    "prepublishOnly": "npm run clean && npm run test && npm run build",
     "setup": "node setup.js",
     "watch": "npm-watch",
     "build": "rollup src/main.js --file bundle.js --sourcemap --format umd --name generic-exceptions",
+    "clean": "find . -name '.DS_Store' -not -path '*/node_modules/*' | xargs rm -r",
     "test": "nyc mocha",
     "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "docs": "npm run docs:gen && npm run docs:publish",
