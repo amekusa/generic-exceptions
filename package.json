@@ -1,6 +1,6 @@
 {
   "name": "generic-exceptions",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Some generic exceptions that can be used commonly",
   "main": "bundle.js",
   "files": [
