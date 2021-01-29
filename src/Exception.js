@@ -2,6 +2,7 @@ let options;
 
 /**
  * The base class of all the other exceptions.
+ * @extends Error
  */
 class Exception extends Error {
 	/**
