@@ -1,6 +1,6 @@
 **generic-exceptions** provides some generic exception classes and useful methods to check and handle some typical programming errors.
 
-[![Build Status](https://travis-ci.org/amekusa/generic-exceptions.svg?branch=master)](https://travis-ci.org/amekusa/generic-exceptions) [![codecov](https://codecov.io/gh/amekusa/generic-exceptions/branch/master/graph/badge.svg)](https://codecov.io/gh/amekusa/generic-exceptions) [![npm](https://img.shields.io/badge/dynamic/json?label=npm%0Apackage&query=%24%5B%27dist-tags%27%5D%5B%27latest%27%5D&url=https%3A%2F%2Fregistry.npmjs.org%2Fgeneric-exceptions%2F)](https://www.npmjs.com/package/generic-exceptions)
+[![Build Status](https://travis-ci.com/amekusa/generic-exceptions.svg?branch=master)](https://travis-ci.com/amekusa/generic-exceptions) [![codecov](https://codecov.io/gh/amekusa/generic-exceptions/branch/master/graph/badge.svg)](https://codecov.io/gh/amekusa/generic-exceptions) [![npm](https://img.shields.io/badge/dynamic/json?label=npm%0Apackage&query=%24%5B%27dist-tags%27%5D%5B%27latest%27%5D&url=https%3A%2F%2Fregistry.npmjs.org%2Fgeneric-exceptions%2F)](https://www.npmjs.com/package/generic-exceptions)
 
 [📘 Documentations](https://amekusa.github.io/generic-exceptions/latest/)
 
