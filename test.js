@@ -33,6 +33,7 @@ function falsy(value) {
 const {
 	NoSuchProp,
 	InvalidType,
+	InvalidValue,
 	Exception
 } = require('./bundle');
 
@@ -44,6 +45,16 @@ describe(`Exception`, () => {
 	it(`.message`, () => {
 		let ex = new Exception(`MSG`);
 		assert.equal(ex.message, `MSG`);
+
+		ex = new Exception(`MSG`, { X: 0, Y: 1 });
+		assert.equal(ex.message, `MSG\n[Exception] To debug, catch me and see .info: ` + JSON.stringify(ex.info, null, 2));
+
+		ex = new Exception(`MSG`, { X: 0, Y: 1 }, true);
+		assert.equal(ex.message, `MSG`);
+	});
+	it(`.message :: format`, () => {
+		let ex = new Exception(`Hello %you%. I'm %me%.`, { me: 'Alice', you: 'Bob' }, true);
+		assert.equal(ex.message, `Hello Bob. I'm Alice.`);
 	});
 	it(`.info`, () => {
 		let info = { X: 1, Y: 2 };
@@ -54,36 +65,6 @@ describe(`Exception`, () => {
 		let ex = new Exception(`A`);
 		assert.throws(() => {
 			ex.trigger();
-		});
-	});
-	it(`.expects(value)`, () => {
-		assert.throws(() => {
-			try {
-				Exception.check('');
-			} catch (e) {
-				assert.ok(e.expects('TRUTHY'));
-				assert.ok(e.expects(1));
-				assert.ok(e.expects(true));
-				throw e;
-			}
-		})
-		assert.throws(() => {
-			try {
-				Exception.check(1, 2);
-			} catch (e) {
-				assert.ok(e.expects(2));
-				throw e;
-			}
-		});
-		assert.throws(() => {
-			try {
-				Exception.check(1, 2, 3);
-			} catch (e) {
-				assert.ok(e.expects(2));
-				assert.ok(e.expects(3));
-				assert.ok(!e.expects(1));
-				throw e;
-			}
 		});
 	});
 
@@ -108,31 +89,6 @@ describe(`Exception`, () => {
 			assert.equal(Exception.option('handler'), 'A');
 			assert.strictEqual(r, Exception);
 		});
-		it(`.check(value)`, () => {
-			assert.throws(() => { Exception.check(false) });
-			assert.throws(() => { Exception.check(0) });
-			assert.throws(() => { Exception.check('') });
-			assert.throws(() => { Exception.check(null) });
-			assert.doesNotThrow(() => {
-				Exception.check(true);
-				Exception.check(1);
-				Exception.check('A');
-				Exception.check({});
-			});
-		});
-		it('.check(value, expected)', () => {
-			assert.throws(() => { Exception.check(1, true) });
-			assert.throws(() => { Exception.check(1, '1') });
-			assert.doesNotThrow(() => {
-				Exception.check(1, 1);
-			})
-		});
-		it('.check(value, expected, ...)', () => {
-			assert.throws(() => { Exception.check(1, true, '1') });
-			assert.doesNotThrow(() => {
-				Exception.check(1, true, '1', 1);
-			});
-		});
 	});
 
 	describe('options', () => {
@@ -146,6 +102,67 @@ describe(`Exception`, () => {
 			});
 			assert.doesNotThrow(() => {
 				ex.trigger();
+			});
+		});
+	});
+});
+
+describe(`InvalidValue`, () => {
+	it(`.expects(value)`, () => {
+		assert.throws(() => {
+			try {
+				InvalidValue.check('');
+			} catch (e) {
+				assert.ok(e.expects('TRUTHY'));
+				assert.ok(e.expects(1));
+				assert.ok(e.expects(true));
+				throw e;
+			}
+		})
+		assert.throws(() => {
+			try {
+				InvalidValue.check(1, 2);
+			} catch (e) {
+				assert.ok(e.expects(2));
+				throw e;
+			}
+		});
+		assert.throws(() => {
+			try {
+				InvalidValue.check(1, 2, 3);
+			} catch (e) {
+				assert.ok(e.expects(2));
+				assert.ok(e.expects(3));
+				assert.ok(!e.expects(1));
+				throw e;
+			}
+		});
+	});
+
+	describe(`static`, () => {
+		it(`.check(value)`, () => {
+			assert.throws(() => { InvalidValue.check(false) });
+			assert.throws(() => { InvalidValue.check(0) });
+			assert.throws(() => { InvalidValue.check('') });
+			assert.throws(() => { InvalidValue.check(null) });
+			assert.doesNotThrow(() => {
+				InvalidValue.check(true);
+				InvalidValue.check(1);
+				InvalidValue.check('A');
+				InvalidValue.check({});
+			});
+		});
+		it('.check(value, expected)', () => {
+			assert.throws(() => { InvalidValue.check(1, true) });
+			assert.throws(() => { InvalidValue.check(1, '1') });
+			assert.doesNotThrow(() => {
+				InvalidValue.check(1, 1);
+			})
+		});
+		it('.check(value, expected, ...)', () => {
+			assert.throws(() => { InvalidValue.check(1, true, '1') });
+			assert.doesNotThrow(() => {
+				InvalidValue.check(1, true, '1', 1);
 			});
 		});
 	});
